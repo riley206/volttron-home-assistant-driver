@@ -23,16 +23,18 @@
 # }}}
 
 
-import random
-from math import pi
 import json
+import logging
+import random
+import requests
 import sys
+from math import pi
+from requests import get
+
+from volttron.client.vip.agent import Agent
 from volttron.driver.base.interfaces import BaseInterface, BaseRegister, BasicRevert
 from volttron import utils
-from volttron.client.vip.agent import Agent
-import logging
-import requests
-from requests import get
+
 
 _log = logging.getLogger(__name__)
 type_mapping = {"string": str,
