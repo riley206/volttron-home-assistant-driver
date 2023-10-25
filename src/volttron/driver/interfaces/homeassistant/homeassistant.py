@@ -27,9 +27,9 @@ import random
 from math import pi
 import json
 import sys
-from platform_driver.interfaces import BaseInterface, BaseRegister, BasicRevert
-from volttron.platform.agent import utils
-from volttron.platform.vip.agent import Agent
+from volttron.driver.base.interfaces import BaseInterface, BaseRegister, BasicRevert
+from volttron import utils
+from volttron.client.vip.agent import Agent
 import logging
 import requests
 from requests import get
