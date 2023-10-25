@@ -51,15 +51,51 @@ pyenv global system 3.8.10
 ```
 </details>
 
+# Installation
 
-## Configuration
+1. Create and activate a virtual environment.
 
-After cloning, generate configuration files. Each device requires one device configuration file and one registry file. Ensure your `registry_config` parameter in your device configuration file, links to the correct registry config name in the config store. For more details on how volttron platform driver agent works with volttron configuration store see, [Platform driver configuration](https://volttron.readthedocs.io/en/main/agent-framework/driver-framework/platform-driver/platform-driver.html#configuration-and-installation). Examples for lights and thermostats are provided below.
+```shell
+python -m venv env
+source env/bin/activate
+```
 
-### Device configuration
+2. Install volttron and start the platform.
 
-Device configuration file contains the connection details to your home assistant instance and `driver_type` as "home_assistant".
+```shell
+pip install volttron
 
+# Start platform with output going to volttron.log
+volttron -vv -l volttron.log &
+```
+3. Install the volttron platform driver:
+
+```shell
+vctl install volttron-platform-driver --vip-identity platform.driver --start
+```
+
+4. Install the volttron home assistant library.
+
+```shell
+pip install volttron-lib-home-assistant-driver
+```
+5. Install a Fake Driver onto the Platform Driver.
+
+Installing a Home Assistant driver in the Platform Driver Agent requires adding copies of the device configuration and registry configuration files to the Platform Driver’s configuration store
+
+6. Create a config directory and navigate to it:
+
+```shell
+mkdir HAconfig
+cd HAconfig
+```
+
+
+
+
+
+
+7. Create a file named `light.example.config` and input your information. 
 ```json
 {
    "driver_config": {
@@ -67,24 +103,17 @@ Device configuration file contains the connection details to your home assistant
        "access_token": "Your Home Assistant Access Token",
        "port": "Your Port"
    },
-   "driver_type": "home_assistant",
+   "driver_type": "homeassistant",
    "registry_config": "config://light.example.json",
    "interval": 30,
    "timezone": "UTC"
 }
 ```
+>**Note:**
+Each device requires one device configuration file and one registry file. Ensure your `registry_config` parameter in your device configuration file, links to the correct registry config name in the config store. For more details on how volttron platform driver agent works with volttron configuration store see, [Platform driver configuration](https://volttron.readthedocs.io/en/main/agent-framework/driver-framework/platform-driver/platform-driver.html#configuration-and-installation). Examples for lights and thermostats are provided below.
+Device configuration file contains the connection details to your home assistant instance and `driver_type` as "homeassistant". this file can be named anything you want but in this example we are naming it `light.example.config`
 
-# Registry Configuration
-
-Registry file can contain one single device and its attributes or a logical group of devices and its attributes. Each entry should include the full entity id of the device, including but not limited to home assistant provided prefix such as "light.",  "climate." etc. The driver uses these prefixes to convert states into integers. Like mentioned before, the driver can only control lights and thermostats but can get data from all devices controlled by home assistant.
-
-Each entry in a registry file should also have a 'Entity Point' and a unique value for 'Volttron Point Name'. The 'Entity ID' maps to the device instance, the 'Entity Point' extracts the attribute or state, and 'Volttron Point Name' determines the name of that point as it appears in VOLTTRON.
-
-Attributes can be located in the developer tools in the Home Assistant GUI.
-
-![Home Assistant Image](home-assistant.png)
-
-Below is an example file named `light.example.json` which has attributes of a single light instance with entity id 'light.example':
+8. Create a file named `light.example.json` and enter your information. (*like the config, this file can be named anything and is only named light.example.json for demonstrative purposes*)
 
 ```json
 [
@@ -112,6 +141,26 @@ Below is an example file named `light.example.json` which has attributes of a si
    }
 ]
 ```
+9. Add light.example.config and light.example.json to the configuration store. 
+```bash
+vctl config store platform.driver devices/home/bedroom HAconfig/light.example.config
+vctl config store platform.driver light.example.json HAconfig/light.example.json --json
+```
+10. Upon completion, utilize the listener agent to verify the driver output in the volttron.log:
+
+```bash
+
+2023-09-12 11:37:00,226 (listeneragent-3.3 211531) __main__ INFO: Peer: pubsub, Sender: platform.driver:, Bus: , Topic: devices/BUILDING/ROOM/light.example/all, Headers: {'Date': '2023-09-12T18:37:00.224648+00:00', 'TimeStamp': '2023-09-12T18:37:00.224648+00:00', 'SynchronizedTimeStamp': '2023-09-12T18:37:00.000000+00:00', 'min_compatible_version': '3.0', 'max_compatible_version': ''}, Message:
+   [{'light_brightness': 254, 'state': 'on'},
+    {'light_brightness': {'type': 'integer', 'tz': 'UTC', 'units': 'int'},
+     'state': {'type': 'integer', 'tz': 'UTC', 'units': 'On / Off'}}]
+```
+> **Note:**
+Registry files can contain one single device and its attributes or a logical group of devices and its attributes. Each entry should include the full entity id of the device, including but not limited to home assistant provided prefix such as "light.",  "climate." etc. The driver uses these prefixes to convert states into integers. Like mentioned before, the driver can only control lights and thermostats but can get data from all devices controlled by home assistant.
+>
+>Each entry in a registry file should also have a 'Entity Point' and a unique value for 'Volttron Point Name'. The 'Entity ID' maps to the device instance, the 'Entity Point' extracts the attribute or state, and 'Volttron Point Name' determines the name of that point as it appears in VOLTTRON.
+>
+>Attributes can be located in the developer tools in the Home Assistant GUI.
 
 > **Note:**
 >
@@ -160,26 +209,6 @@ For thermostats, the state is converted into numbers as follows: "0: Off, 2: hea
    }
 ]
 ```
-
-
-## Transfer the registers files and the config files into the VOLTTRON config store
-Use the commands below:
-
-```bash
-vctl config store platform.driver light.example.json HomeAssistant_Driver/light.example.json
-vctl config store platform.driver devices/BUILDING/ROOM/light.example HomeAssistant_Driver/light.example.config
-```
-
-Upon completion, initiate the platform driver. Utilize the listener agent to verify the driver output:
-
-```bash
-
-2023-09-12 11:37:00,226 (listeneragent-3.3 211531) __main__ INFO: Peer: pubsub, Sender: platform.driver:, Bus: , Topic: devices/BUILDING/ROOM/light.example/all, Headers: {'Date': '2023-09-12T18:37:00.224648+00:00', 'TimeStamp': '2023-09-12T18:37:00.224648+00:00', 'SynchronizedTimeStamp': '2023-09-12T18:37:00.000000+00:00', 'min_compatible_version': '3.0', 'max_compatible_version': ''}, Message:
-   [{'light_brightness': 254, 'state': 'on'},
-    {'light_brightness': {'type': 'integer', 'tz': 'UTC', 'units': 'int'},
-     'state': {'type': 'integer', 'tz': 'UTC', 'units': 'On / Off'}}]
-```
-
 # Adding Features
 
 
@@ -189,7 +218,6 @@ To add control for new devices, first understand the desired functionality and h
 
 
 ```python
-
     elif "light." in entity_id:
         if entity_point == "state":
             state = entity_data.get("state", None)
@@ -207,7 +235,6 @@ To add a new device such as a smart switch, we would likely have to do a similar
 To actually control these devices with VOLTTRON, we need to update the _set_point function. Below you will see where the driver takes these new numbers and takes action based on the new register value.
 
 ```python
-
     if "light." in register.entity_id:
     if entity_point == "state":
         if isinstance(register.value, int) and register.value in [0, 1]:
