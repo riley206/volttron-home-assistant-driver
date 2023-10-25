@@ -26,7 +26,7 @@ If applicable, add screenshots to help explain your problem.
 
 **System (please complete the following information):**
 
-- `volttron-emailer` version: [e.g. 0.2.1]
+- `volttron-home-assistant-driver` version: [e.g. 0.2.1]
 - Python version: [e.g. 3.8]
 - OS: [Windows/Linux]
 
