@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.2.2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-eggsecutable = "homeassistant.agent:main"
+eggsecutable = "home_assistant.agent:main"
 
 [tool.isort]
 profile = "black"
