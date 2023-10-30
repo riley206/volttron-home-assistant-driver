@@ -27,15 +27,14 @@ import logging
 import pytest
 import gevent
 
- # TODO Fix imports
-# from volttron.platform.agent.known_identities import (
-#     PLATFORM_DRIVER,
-#     CONFIGURATION_STORE,
-# )
-# from volttron.platform import get_services_core
-# from volttron.platform.agent import utils
-# from volttron.platform.keystore import KeyStore
-# from volttrontesting.utils.platformwrapper import PlatformWrapper
+from volttron.client.known_identities import (
+    PLATFORM_DRIVER,
+    CONFIGURATION_STORE,
+)
+from volttron.client.commands import get_services_core
+from volttron import utils
+from volttron.utils.keystore import KeyStore
+from volttrontesting.platformwrapper import PlatformWrapper
 
 utils.setup_logging()
 logger = logging.getLogger(__name__)
