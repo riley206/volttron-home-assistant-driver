@@ -90,11 +90,6 @@ mkdir HAconfig
 cd HAconfig
 ```
 
-
-
-
-
-
 7. Create a file named `light.example.config` and input your information. 
 ```json
 {
@@ -110,7 +105,7 @@ cd HAconfig
 }
 ```
 >**Note:**
-Each device requires one device configuration file and one registry file. Ensure your `registry_config` parameter in your device configuration file, links to the correct registry config name in the config store. For more details on how volttron platform driver agent works with volttron configuration store see, [Platform driver configuration](https://volttron.readthedocs.io/en/main/agent-framework/driver-framework/platform-driver/platform-driver.html#configuration-and-installation). Examples for lights and thermostats are provided below.
+Ensure your `registry_config` parameter in your device configuration file, links to the correct registry config name in the config store. For more details on how volttron platform driver agent works with volttron configuration store see, [Platform driver configuration](https://volttron.readthedocs.io/en/main/agent-framework/driver-framework/platform-driver/platform-driver.html#configuration-and-installation). Examples for lights and thermostats are provided below.
 Device configuration file contains the connection details to your home assistant instance and `driver_type` as "homeassistant". this file can be named anything you want but in this example we are naming it `light.example.config`
 
 8. Create a file named `light.example.json` and enter your information. (*like the config, this file can be named anything and is only named light.example.json for demonstrative purposes*)
