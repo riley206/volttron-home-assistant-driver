@@ -31,10 +31,12 @@ from volttron.client.known_identities import (
     PLATFORM_DRIVER,
     CONFIGURATION_STORE,
 )
-from volttron.client.commands import get_services_core
+# TODO
+# from volttron.client.commands import get_services_core
 from volttron import utils
 from volttron.utils.keystore import KeyStore
 from volttrontesting.platformwrapper import PlatformWrapper
+from volttrontesting.fixtures.volttron_platform_fixtures import volttron_instance
 
 utils.setup_logging()
 logger = logging.getLogger(__name__)
@@ -57,11 +59,24 @@ pytestmark = pytest.mark.skipif(
 HOMEASSISTANT_DEVICE_TOPIC = "devices/home_assistant"
 
 
+def test_platform_driver_status(volttron_instance):
+    print("Starting test_platform_driver_status")
+    agents = volttron_instance.list_agents()
+    print("List of agents:", agents)
+    dynamic_agent_running = False
+    for agent in agents:
+        print("Checking agent:", agent)
+        if agent['identity'] == 'dynamic_agent' and agent['status'] == 'running':
+            dynamic_agent_running = True
+    print("Is the dynamic agent running?", dynamic_agent_running)
+
+
 # Get the point which will should be off
 def test_get_point(volttron_instance, config_store):
     expected_values = 0
     agent = volttron_instance.dynamic_agent
-    result = agent.vip.rpc.call(PLATFORM_DRIVER, 'get_point', 'home_assistant', 'bool_state').get(timeout=20)
+    gevent.sleep(10)
+    result = agent.vip.rpc.call('platform.driver', 'get_point', 'home_assistant', 'bool_state').get(timeout=20)
     assert result == expected_values, "The result does not match the expected result."
 
 
@@ -138,9 +153,11 @@ def config_store(volttron_instance, platform_driver):
 
 @pytest.fixture(scope="module")
 def platform_driver(volttron_instance):
-    # Start the platform driver agent which would in turn start the bacnet driver
+    # Start the platform driver agent which would in turn start the Home Assistant driver
     platform_uuid = volttron_instance.install_agent(
-        agent_dir=get_services_core("PlatformDriverAgent"),
+        # TODO incorporate get_services_core for un-hardcoded path.
+        #agent_dir=get_services_core("PlatformDriverAgent"),
+        agent_dir="/home/riley/volttron-platform-driver",
         config_file={
             "publish_breadth_first_all": False,
             "publish_depth_first": False,
