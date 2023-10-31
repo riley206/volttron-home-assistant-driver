@@ -142,6 +142,20 @@ class Interface(BasicRevert, BaseInterface):
                 error_msg = f"Unexpected point_name {point_name} for register {register.entity_id}"
                 _log.error(error_msg)
                 raise ValueError(error_msg)
+            
+        elif "input_boolean." in register.entity_id:
+            if entity_point == "state":
+                if isinstance(register.value, int) and register.value in [0, 1]:
+                    if register.value == 1:
+                        self.set_input_boolean(register.entity_id, "on")
+                    elif register.value == 0:
+                        self.set_input_boolean(register.entity_id, "off")
+                else:
+                    error_msg = f"State value for {register.entity_id} should be an integer value of 1 or 0"
+                    _log.info(error_msg)
+                    raise ValueError(error_msg)
+            else:
+                _log.info(f"Currently, input_booleans only support state")
                 
         # Changing thermostat values. 
         elif "climate." in register.entity_id:
@@ -225,7 +239,7 @@ class Interface(BasicRevert, BaseInterface):
                         register.value = attribute
                         result[register.point_name] = attribute
                 # handling light states
-                elif "light." in entity_id:
+                elif "light." or "input_boolean." in entity_id: # Checks for lights or input bools since they have the same states.
                     if entity_point == "state":
                         state = entity_data.get("state", None)
                         # Converting light states to numbers. 
@@ -373,3 +387,23 @@ class Interface(BasicRevert, BaseInterface):
         }
 
         _post_method(url, headers, payload, f"set brightness of {entity_id} to {value}")
+
+    def set_input_boolean(self, entity_id, state):
+        service = 'turn_on' if state == 'on' else 'turn_off'
+        url = f"http://{self.ip_address}:{self.port}/api/services/input_boolean/{service}"
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "entity_id": entity_id
+        }
+        
+        response = requests.post(url, headers=headers, json=payload)
+        
+        # Optionally check for a successful response
+        if response.status_code == 200:
+            print(f"Successfully set {entity_id} to {state}")
+        else:
+            print(f"Failed to set {entity_id} to {state}: {response.text}")
