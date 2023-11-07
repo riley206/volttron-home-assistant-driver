@@ -22,91 +22,24 @@
 # ===----------------------------------------------------------------------===
 # }}}
 
-import json
-import logging
-import pytest
-import gevent
+"""Integration tests for volttron-lib-home-assistant-driver"""
 
-from volttron.client.known_identities import (
-    PLATFORM_DRIVER,
-    CONFIGURATION_STORE,
-)
-# TODO
-# from volttron.client.commands import get_services_core
-from volttron import utils
-from volttron.utils.keystore import KeyStore
+import json
+import gevent
+import pytest
+from volttron.client.known_identities import CONFIGURATION_STORE, PLATFORM_DRIVER
+from volttron.utils import jsonapi
 from volttrontesting.platformwrapper import PlatformWrapper
 from volttrontesting.fixtures.volttron_platform_fixtures import volttron_instance
 
-utils.setup_logging()
-logger = logging.getLogger(__name__)
-
 # To run these tests, create a helper toggle named volttrontest in your Home Assistant instance.
 # This can be done by going to Settings > Devices & services > Helpers > Create Helper > Toggle
-
-HOMEASSISTANT_DEVICE_TOPIC = "devices/home_assistant"
 HOMEASSISTANT_TEST_IP = ""
 ACCESS_TOKEN = ""
 PORT = ""
 
-skip_msg = "Some configuration variables are not set. Check HOMEASSISTANT_TEST_IP, ACCESS_TOKEN, and PORT"
-
-# Skip tests if variables are not set
-pytestmark = pytest.mark.skipif(
-    not (HOMEASSISTANT_TEST_IP and ACCESS_TOKEN and PORT),
-    reason=skip_msg
-)
-HOMEASSISTANT_DEVICE_TOPIC = "devices/home_assistant"
-
-
-def test_platform_driver_status(volttron_instance):
-    print("Starting test_platform_driver_status")
-    agents = volttron_instance.list_agents()
-    print("List of agents:", agents)
-    dynamic_agent_running = False
-    for agent in agents:
-        print("Checking agent:", agent)
-        if agent['identity'] == 'dynamic_agent' and agent['status'] == 'running':
-            dynamic_agent_running = True
-    print("Is the dynamic agent running?", dynamic_agent_running)
-
-
-# Get the point which will should be off
-def test_get_point(volttron_instance, config_store):
-    expected_values = 0
-    agent = volttron_instance.dynamic_agent
-    gevent.sleep(10)
-    result = agent.vip.rpc.call('platform.driver', 'get_point', 'home_assistant', 'bool_state').get(timeout=20)
-    assert result == expected_values, "The result does not match the expected result."
-
-
-# The default value for this fake light is 3. If the test cannot reach out to home assistant,
-# the value will default to 3 making the test fail.
-def test_data_poll(volttron_instance: PlatformWrapper, config_store):
-    expected_values = [{'bool_state': 0}, {'bool_state': 1}]
-    agent = volttron_instance.dynamic_agent
-    result = agent.vip.rpc.call(PLATFORM_DRIVER, 'scrape_all', 'home_assistant').get(timeout=20)
-    assert result in expected_values, "The result does not match the expected result."
-
-
-# Turn on the light. Light is automatically turned off every 30 seconds to allow test to turn
-# it on and receive the correct value.
-def test_set_point(volttron_instance, config_store):
-    expected_values = {'bool_state': 1}
-    agent = volttron_instance.dynamic_agent
-    agent.vip.rpc.call(PLATFORM_DRIVER, 'set_point', 'home_assistant', 'bool_state', 1)
-    gevent.sleep(10)
-    result = agent.vip.rpc.call(PLATFORM_DRIVER, 'scrape_all', 'home_assistant').get(timeout=20)
-    assert result == expected_values, "The result does not match the expected result."
-
-
-@pytest.fixture(scope="module")
-def config_store(volttron_instance, platform_driver):
-
-    capabilities = [{"edit_config_store": {"identity": PLATFORM_DRIVER}}]
-    volttron_instance.add_capabilities(volttron_instance.dynamic_agent.core.publickey, capabilities)
-
-    registry_config = "homeassistant_test.json"
+def test_scrape_all(publish_agent):
+    # add Home Assistant Driver to Platform Driver
     registry_obj = [{
         "Entity ID": "input_boolean.volttrontest",
         "Entity Point": "state",
@@ -118,57 +51,114 @@ def config_store(volttron_instance, platform_driver):
         "Type": "int",
         "Notes": "lights hallway"
     }]
+    publish_agent.vip.rpc.call(CONFIGURATION_STORE,
+                               "manage_store",
+                               PLATFORM_DRIVER,
+                               "homeassistant_test.json",
+                               json.dumps(registry_obj),
+                               config_type="json")
 
-    volttron_instance.dynamic_agent.vip.rpc.call(CONFIGURATION_STORE,
-                                                 "manage_store",
-                                                 PLATFORM_DRIVER,
-                                                 registry_config,
-                                                 json.dumps(registry_obj),
-                                                 config_type="json")
-    gevent.sleep(2)
-    # driver config
     driver_config = {
         "driver_config": {"ip_address": HOMEASSISTANT_TEST_IP, "access_token": ACCESS_TOKEN, "port": PORT},
         "driver_type": "home_assistant",
-        "registry_config": f"config://{registry_config}",
+        "registry_config": f"config://homeassistant_test.json",
         "timezone": "US/Pacific",
         "interval": 30,
     }
+    publish_agent.vip.rpc.call(CONFIGURATION_STORE,
+                               "manage_store",
+                               PLATFORM_DRIVER,
+                               "devices/home_assistant",
+                               jsonapi.dumps(driver_config),
+                               config_type='json')
 
-    volttron_instance.dynamic_agent.vip.rpc.call(CONFIGURATION_STORE,
-                                                 "manage_store",
-                                                 PLATFORM_DRIVER,
-                                                 HOMEASSISTANT_DEVICE_TOPIC,
-                                                 json.dumps(driver_config),
-                                                 config_type="json"
-                                                 )
-    gevent.sleep(2)
+    gevent.sleep(10)
 
-    yield platform_driver
+    actual_scrape_all_results = publish_agent.vip.rpc.call(PLATFORM_DRIVER, "scrape_all",
+                                                           "home_assistant").get(timeout=10)
+    expected_scrape_all_results = {
+        'bool_state': 0
+    }
+    assert actual_scrape_all_results == expected_scrape_all_results
 
-    print("Wiping out store.")
-    volttron_instance.dynamic_agent.vip.rpc.call(CONFIGURATION_STORE, "manage_delete_store", PLATFORM_DRIVER)
-    gevent.sleep(0.1)
-
+def test_get_point_set_point(publish_agent):
+    actual_boolValue = publish_agent.vip.rpc.call(
+            PLATFORM_DRIVER, "get_point", "home_assistant", "bool_state").get(timeout=10)
+    assert actual_boolValue == 0
+    
+    #set_point
+    actual_boolValue = publish_agent.vip.rpc.call(PLATFORM_DRIVER, "set_point", "home_assistant",
+                                                              "bool_state",
+                                                              1).get(timeout=10)
+    assert actual_boolValue == 1
 
 @pytest.fixture(scope="module")
-def platform_driver(volttron_instance):
-    # Start the platform driver agent which would in turn start the Home Assistant driver
-    platform_uuid = volttron_instance.install_agent(
-        # TODO incorporate get_services_core for un-hardcoded path.
-        #agent_dir=get_services_core("PlatformDriverAgent"),
-        agent_dir="/home/riley/volttron-platform-driver",
-        config_file={
-            "publish_breadth_first_all": False,
-            "publish_depth_first": False,
-            "publish_breadth_first": False,
-        },
-        start=True,
-    )
-    gevent.sleep(2)  # wait for the agent to start and start the devices
-    assert volttron_instance.is_agent_running(platform_uuid)
-    yield platform_uuid
+def publish_agent(volttron_instance: PlatformWrapper):
+    assert volttron_instance.is_running()
+    vi = volttron_instance
+    assert vi is not None
+    assert vi.is_running()
 
-    volttron_instance.stop_agent(platform_uuid)
-    if not volttron_instance.debug_mode:
-        volttron_instance.remove_agent(platform_uuid)
+    # install platform driver
+    config = {
+        "driver_scrape_interval": 0.05,
+        "publish_breadth_first_all": "false",
+        "publish_depth_first": "false",
+        "publish_breadth_first": "false"
+    }
+    puid = vi.install_agent(agent_dir="volttron-platform-driver",
+                            config_file=config,
+                            start=False,
+                            vip_identity=PLATFORM_DRIVER)
+    assert puid is not None
+    gevent.sleep(1)
+    assert vi.start_agent(puid)
+    assert vi.is_agent_running(puid)
+
+    # create the publish agent
+    publish_agent = volttron_instance.build_agent()
+    assert publish_agent.core.identity
+    gevent.sleep(1)
+
+    capabilities = {"edit_config_store": {"identity": PLATFORM_DRIVER}}
+    volttron_instance.add_capabilities(publish_agent.core.publickey, capabilities)
+
+    # Add Home Assistant Driver to Platform Driver
+    registry_obj = [{
+        "Entity ID": "input_boolean.volttrontest",
+        "Entity Point": "state",
+        "Volttron Point Name": "bool_state",
+        "Units": "On / Off",
+        "Units Details": "off: 0, on: 1",
+        "Writable": True,
+        "Starting Value": 3,
+        "Type": "int",
+        "Notes": "lights hallway"
+    }]
+    publish_agent.vip.rpc.call(CONFIGURATION_STORE,
+                               "manage_store",
+                               PLATFORM_DRIVER,
+                               "homeassistant_test.json",
+                               json.dumps(registry_obj),
+                               config_type="json")
+
+    driver_config = {
+        "driver_config": {"ip_address": HOMEASSISTANT_TEST_IP, "access_token": ACCESS_TOKEN, "port": PORT},
+        "driver_type": "home_assistant",
+        "registry_config": f"config://homeassistant_test.json",
+        "timezone": "US/Pacific",
+        "interval": 30,
+    }
+    publish_agent.vip.rpc.call(CONFIGURATION_STORE,
+                               "manage_store",
+                               PLATFORM_DRIVER,
+                               "devices/home_assistant",
+                               jsonapi.dumps(driver_config),
+                               config_type='json')
+
+    gevent.sleep(10)
+
+    yield publish_agent
+
+    volttron_instance.stop_agent(puid)
+    publish_agent.core.stop()
