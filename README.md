@@ -158,7 +158,6 @@ Registry files can contain one single device and its attributes or a logical gro
 >Attributes can be located in the developer tools in the Home Assistant GUI.
 
 > **Note:**
->
 > When using a single registry file to represent a logical group of multiple physical entities, make sure the "Volttron Point Name" is unique within a single registry file. 
 > 
 > For example, if a registry file contains entities with id  'light.instance1' and 'light.instance2' the entry for the attribute brightness for these two light instances could have "Volttron Point Name" as 'light1/brightness' and 'light2/brightness' respectively. This would ensure that data is posted to unique topic names and brightness data from light1 is not overwritten by light2 or vice-versa.
