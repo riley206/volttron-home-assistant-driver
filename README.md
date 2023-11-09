@@ -213,16 +213,16 @@ To add control for new devices, first understand the desired functionality and h
 
 
 ```python
-    elif "light." in entity_id:
-        if entity_point == "state":
-            state = entity_data.get("state", None)
-            # Converting light states to numbers. 
-            if state == "on":
-                register.value = 1
-                result[register.point_name] = 1
-            elif state == "off":
-                register.value = 0
-                result[register.point_name] = 0
+elif "light." in entity_id:
+    if entity_point == "state":
+        state = entity_data.get("state", None)
+        # Converting light states to numbers. 
+        if state == "on":
+            register.value = 1
+            result[register.point_name] = 1
+        elif state == "off":
+            register.value = 0
+            result[register.point_name] = 0
 ```
 
 To add a new device such as a smart switch, we would likely have to do a similar thing. You can simply add a new elif statement in the _scrape_all function to retrieve data for this new device and convert the values (if needed). 
@@ -230,16 +230,26 @@ To add a new device such as a smart switch, we would likely have to do a similar
 To actually control these devices with VOLTTRON, we need to update the _set_point function. Below you will see where the driver takes these new numbers and takes action based on the new register value.
 
 ```python
-    if "light." in register.entity_id:
-    if entity_point == "state":
-        if isinstance(register.value, int) and register.value in [0, 1]:
-            if register.value == 1:
-                self.turn_on_lights(register.entity_id)
-            elif register.value == 0:
-                self.turn_off_lights(register.entity_id)
+if "light." in register.entity_id:
+if entity_point == "state":
+    if isinstance(register.value, int) and register.value in [0, 1]:
+        if register.value == 1:
+            self.turn_on_lights(register.entity_id)
+        elif register.value == 0:
+            self.turn_off_lights(register.entity_id)
 ```
 
 Once we get this new value such as 0, we call the appropriate function to turn off the light in Home Assistant. You may use the existing control functions as reference but keep in mind that the Home Assistant REST API requires different URLs for different devices so please keep the documentation close when adding new control functions.
+
+# Running Tests
+
+To run tests on the VOLTTRON home assistant driver you need to create a helper in your home assistant instance. This can be done by going to **Settings > Devices & services > Helpers > Create Helper > Toggle**. Name this new toggle **volttrontest**. After that run the pytest from the root of your VOLTTRON file.
+
+```bash
+pytest volttron/services/core/PlatformDriverAgent tests/test_home_assistant.py
+```
+
+If everything works, you will see 6 passed tests.
 
 # Disclaimer Notice
 
