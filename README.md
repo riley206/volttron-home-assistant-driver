@@ -243,10 +243,12 @@ Once we get this new value such as 0, we call the appropriate function to turn o
 
 # Running Tests
 
-To run tests on the VOLTTRON home assistant driver you need to create a helper in your home assistant instance. This can be done by going to **Settings > Devices & services > Helpers > Create Helper > Toggle**. Name this new toggle **volttrontest**. After that run the pytest from the root of your VOLTTRON file.
+To run tests on the VOLTTRON home assistant driver you need to create a helper in your home assistant instance. This can be done by going to **Settings > Devices & services > Helpers > Create Helper > Toggle**. Name this new toggle **volttrontest**. After that navigate to the repo and run the test.
 
 ```bash
-pytest volttron/services/core/PlatformDriverAgent tests/test_home_assistant.py
+cd volttron-lib-home-assistant-driver
+poetry install
+poetry run pytest tests/test_home_assistant.py
 ```
 
 If everything works, you will see 6 passed tests.
