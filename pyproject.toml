@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.2.2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-eggsecutable = "home_assistant.agent:main"
+volttron-lib-home-assistant-driver = "home_assistant.agent:main"
 
 [tool.isort]
 profile = "black"
@@ -53,7 +53,7 @@ sphinx-rtd-theme = "^1.0.0"
 [tool.yapf]
 based_on_style = "pep8"
 spaces_before_comment = 4
-column_limit = 99
+column_limit = 120
 split_before_logical_operator = true
 
 [tool.yapfignore]
