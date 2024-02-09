@@ -5,7 +5,7 @@
 #
 # ===----------------------------------------------------------------------===
 #
-# Copyright 2022 Battelle Memorial Institute
+# Copyright 2024 Battelle Memorial Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy
@@ -21,7 +21,6 @@
 #
 # ===----------------------------------------------------------------------===
 # }}}
-
 """Integration tests for volttron-lib-home-assistant-driver"""
 
 import json
@@ -37,6 +36,7 @@ from volttrontesting.fixtures.volttron_platform_fixtures import volttron_instanc
 HOMEASSISTANT_TEST_IP = ""
 ACCESS_TOKEN = ""
 PORT = ""
+
 
 def test_scrape_all(publish_agent):
     # add Home Assistant Driver to Platform Driver
@@ -59,7 +59,11 @@ def test_scrape_all(publish_agent):
                                config_type="json")
 
     driver_config = {
-        "driver_config": {"ip_address": HOMEASSISTANT_TEST_IP, "access_token": ACCESS_TOKEN, "port": PORT},
+        "driver_config": {
+            "ip_address": HOMEASSISTANT_TEST_IP,
+            "access_token": ACCESS_TOKEN,
+            "port": PORT
+        },
         "driver_type": "home_assistant",
         "registry_config": f"config://homeassistant_test.json",
         "timezone": "US/Pacific",
@@ -76,21 +80,20 @@ def test_scrape_all(publish_agent):
 
     actual_scrape_all_results = publish_agent.vip.rpc.call(PLATFORM_DRIVER, "scrape_all",
                                                            "home_assistant").get(timeout=10)
-    expected_scrape_all_results = {
-        'bool_state': 0
-    }
+    expected_scrape_all_results = {'bool_state': 0}
     assert actual_scrape_all_results == expected_scrape_all_results
 
+
 def test_get_point_set_point(publish_agent):
-    actual_boolValue = publish_agent.vip.rpc.call(
-            PLATFORM_DRIVER, "get_point", "home_assistant", "bool_state").get(timeout=10)
+    actual_boolValue = publish_agent.vip.rpc.call(PLATFORM_DRIVER, "get_point", "home_assistant",
+                                                  "bool_state").get(timeout=10)
     assert actual_boolValue == 0
-    
+
     #set_point
-    actual_boolValue = publish_agent.vip.rpc.call(PLATFORM_DRIVER, "set_point", "home_assistant",
-                                                              "bool_state",
-                                                              1).get(timeout=10)
+    actual_boolValue = publish_agent.vip.rpc.call(PLATFORM_DRIVER, "set_point", "home_assistant", "bool_state",
+                                                  1).get(timeout=10)
     assert actual_boolValue == 1
+
 
 @pytest.fixture(scope="module")
 def publish_agent(volttron_instance: PlatformWrapper):
@@ -143,7 +146,11 @@ def publish_agent(volttron_instance: PlatformWrapper):
                                config_type="json")
 
     driver_config = {
-        "driver_config": {"ip_address": HOMEASSISTANT_TEST_IP, "access_token": ACCESS_TOKEN, "port": PORT},
+        "driver_config": {
+            "ip_address": HOMEASSISTANT_TEST_IP,
+            "access_token": ACCESS_TOKEN,
+            "port": PORT
+        },
         "driver_type": "home_assistant",
         "registry_config": f"config://homeassistant_test.json",
         "timezone": "US/Pacific",
