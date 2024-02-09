@@ -2,7 +2,7 @@
 # volttron-lib-home-assistant-driver
 
 The Home Assistant driver enables VOLTTRON to read any data point from any Home Assistant controlled device.
-Currently control(write access) is supported only for lights(state and brightness) and thermostats(state and temperature).
+Currently control (write access) is supported only for lights (state and brightness) and thermostats (state and temperature).
 
 The following diagram shows interaction between platform driver agent and home assistant driver.
 
@@ -31,8 +31,6 @@ Before installing, VOLTTRON should be installed and running.  Its virtual enviro
 Information on how to install of the VOLTTRON platform can be found
 [here](https://github.com/eclipse-volttron/volttron-core).
 
-Find your Home Assistant IP address and long-lived access token from [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
-
 Install the volttron platform driver:
 
 ```shell
@@ -45,16 +43,16 @@ Install the volttron home assistant library.
 pip install volttron-lib-home-assistant-driver
 ```
 
-Using the Home Assistant driver requires adding copies of the device configuration and registry configuration files to the Platform Driver’s configuration store
+Using the Home Assistant driver requires adding copies of the device configuration and registry configuration files to the Platform Driver’s configuration store.
 
-Create a directory called `config` and use change directory to enter it.
+Create a directory named `config` and use change directory to enter it.
 
 ```shell
 mkdir config
 cd config
 ```
 
-Create a file named `light.example.config` and input the below JSON. Adjust `Your Home Assistant IP`, `Your Home Assistant Access Token`, and `Your Port` to reflect your instance.
+Create a file named `light.example.config` and input the below JSON. Adjust `Your Home Assistant IP`, `Your Home Assistant Access Token`, and `Your Port` to reflect your instance. You can find your Home Assistant IP address and long-lived access token from [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
 
 ```json
 {
