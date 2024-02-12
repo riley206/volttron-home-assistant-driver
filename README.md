@@ -52,14 +52,18 @@ mkdir config
 cd config
 ```
 
-Create a file named `light.example.config` and input the below JSON. Adjust `Your Home Assistant IP`, `Your Home Assistant Access Token`, and `Your Port` to reflect your instance. You can find your Home Assistant IP address and long-lived access token from [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
+Create a file named `light.example.config` and input the below JSON.
+
+* `url`: Adjust `[Your Home Assistant IP]`, and `[Your Port]` to reflect your instance (removing brackets []). Be sure to specify http or https. You can find your Home Assistant IP address [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
+* `access_token`: replace `[Your Home Assistant Access Token]` with your token (removing brackets []). Instructions on how to find your access token can be found [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
 
 ```json
 {
    "driver_config": {
-       "ip_address": "Your Home Assistant IP",
-       "access_token": "Your Home Assistant Access Token",
-       "port": "Your Port"
+       "url": "http://[Your Home Assistant IP]:[Your Port]",
+       "access_token": "[Your Home Assistant Access Token]",
+       "verify_ssl": true,
+       "ssl_cert_path": ""
    },
    "driver_type": "home_assistant",
    "registry_config": "config://light.example.json",
@@ -70,9 +74,9 @@ Create a file named `light.example.config` and input the below JSON. Adjust `You
 
 >**Note:**
 Ensure your `registry_config` parameter in your device configuration file, links to the correct registry config name in the config store. For more details on how volttron platform driver agent works with volttron configuration store see, [Platform driver configuration](https://volttron.readthedocs.io/en/main/agent-framework/driver-framework/platform-driver/platform-driver.html#configuration-and-installation). Examples for lights and thermostats are provided below.
-Device configuration file contains the connection details to your home assistant instance and `driver_type` as "homeassistant". this file can be named anything you want but in this example we are naming it `light.example.config`
+Device configuration file contains the connection details to your home assistant instance and `driver_type` as "home_assistant". this file can be named anything you want but in this example we are naming it `light.example.config`
 
-Create a file named `light.example.json` and enter your information. (*like the config, this file can be named anything and is only named light.example.json for demonstrative purposes*)
+Create a file named `light.example.json` and enter your information. (*like the config, this file can be named anything and is only named light.example.json for demonstrative purposes*).
 
 ```json
 [
@@ -108,14 +112,10 @@ vctl config store platform.driver devices/home/bedroom light.example.config
 vctl config store platform.driver light.example.json light.example.json
 ```
 
-Utilize the listener agent to verify the driver output in the volttron.log:
+View the status of the installed agent
 
-```bash
-
-2023-09-12 11:37:00,226 (listeneragent-3.3 211531) __main__ INFO: Peer: pubsub, Sender: platform.driver:, Bus: , Topic: devices/BUILDING/ROOM/light.example/all, Headers: {'Date': '2023-09-12T18:37:00.224648+00:00', 'TimeStamp': '2023-09-12T18:37:00.224648+00:00', 'SynchronizedTimeStamp': '2023-09-12T18:37:00.000000+00:00', 'min_compatible_version': '3.0', 'max_compatible_version': ''}, Message:
-   [{'light_brightness': 254, 'state': 'on'},
-    {'light_brightness': {'type': 'integer', 'tz': 'UTC', 'units': 'int'},
-     'state': {'type': 'integer', 'tz': 'UTC', 'units': 'On / Off'}}]
+```shell
+vctl status
 ```
 
 Registry files can contain one single device and its attributes or a logical group of devices and its attributes. Each entry should include the full entity id of the device, including but not limited to home assistant provided prefix such as "light.",  "climate." etc. The driver uses these prefixes to convert states into integers. Like mentioned before, the driver can only control lights and thermostats but can get data from all devices controlled by home assistant.
