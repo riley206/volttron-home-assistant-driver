@@ -52,10 +52,12 @@ mkdir config
 cd config
 ```
 
-Create a file named `light.example.config` and input the below JSON.
+Create a file named `light.example.config` and input the below JSON. 
 
-* `url`: Adjust `[Your Home Assistant IP]`, and `[Your Port]` to reflect your instance (removing brackets []). Be sure to specify http or https. You can find your Home Assistant IP address [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
-* `access_token`: replace `[Your Home Assistant Access Token]` with your token (removing brackets []). Instructions on how to find your access token can be found [here](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token).
+* `url`: Replace `[Your Home Assistant IP]` and `[Your Port]` with your Home Assistant's IP address and port number, respectively, removing the brackets []. Ensure you specify the protocol (`http` or `https`) based on your setup. Refer to the [Home Assistant documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token). for finding your IP address.
+* `access_token`: Substitute `[Your Home Assistant Access Token]` with your actual access token, again removing the brackets []. For instructions on obtaining your access token, visit [this guide](https://www.raycast.com/tonka3000/homeassistant).
+* `verify_ssl`: Set to true to enable SSL certificate verification or false to bypass it. Default is true. Disabling verification may pose security risks.
+* `ssl_cert_path`: Enter the path to your SSL certificate if you are using a custom certificate for verification. Leave this field empty if you are not using a custom certificate. This field is empty by default.
 
 ```json
 {
