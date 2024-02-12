@@ -80,21 +80,21 @@ class Interface(BasicRevert, BaseInterface):
     def __init__(self, **kwargs):
         super(Interface, self).__init__(**kwargs)
         self.point_name = None
-        self.ip_address = None
+        self.url = None
         self.access_token = None
         self.verify_ssl = False    # Default to False for security
         self.units = None
 
     def configure(self, config_dict, registry_config_str):
-        self.ip_address = config_dict.get("ip_address", None)
+        self.url = config_dict.get("url", None)
         self.access_token = config_dict.get("access_token", None)
         self.verify_ssl = config_dict.get("verify_ssl", False)
         self.ssl_cert_path = config_dict.get("ssl_cert_path", "")
 
         # Check for None values
-        if self.ip_address is None:
-            _log.error("IP address is not set.")
-            raise ValueError("IP address is required.")
+        if self.url is None:
+            _log.error("URL address is not set.")
+            raise ValueError("URL is required.")
         if self.access_token is None:
             _log.error("Access token is not set.")
             raise ValueError("Access token is required.")
@@ -205,7 +205,7 @@ class Interface(BasicRevert, BaseInterface):
             "Content-Type": "application/json",
         }
         # the /states grabs current state AND attributes of a specific entity
-        url = f"{self.ip_address}/api/states/{point_name}"
+        url = f"{self.url}/api/states/{point_name}"
         response = requests.get(url, headers=headers, verify=self.verify_option)
         if response.status_code == 200:
             return response.json()    # return the json attributes from entity
@@ -318,7 +318,7 @@ class Interface(BasicRevert, BaseInterface):
             self.insert_register(register)
 
     def turn_off_lights(self, entity_id):
-        url = f"{self.ip_address}/api/services/light/turn_off"
+        url = f"{self.url}/api/services/light/turn_off"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
@@ -329,7 +329,7 @@ class Interface(BasicRevert, BaseInterface):
         _post_method(url, headers, payload, f"turn off {entity_id}")
 
     def turn_on_lights(self, entity_id):
-        url = f"{self.ip_address}/api/services/light/turn_on"
+        url = f"{self.url}/api/services/light/turn_on"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
@@ -344,7 +344,7 @@ class Interface(BasicRevert, BaseInterface):
             _log.error(f"{entity_id} is not a valid thermostat entity ID.")
             return
         # Build header
-        url = f"{self.ip_address}/api/services/climate/set_hvac_mode"
+        url = f"{self.url}/api/services/climate/set_hvac_mode"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "content-type": "application/json",
@@ -363,7 +363,7 @@ class Interface(BasicRevert, BaseInterface):
             _log.error(f"{entity_id} is not a valid thermostat entity ID.")
             return
 
-        url = f"{self.ip_address}/api/services/climate/set_temperature"
+        url = f"{self.url}/api/services/climate/set_temperature"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "content-type": "application/json",
@@ -384,7 +384,7 @@ class Interface(BasicRevert, BaseInterface):
         _post_method(url, headers, data, f"set temperature of {entity_id} to {temperature}")
 
     def change_brightness(self, entity_id, value):
-        url = f"{self.ip_address}/api/services/light/turn_on"
+        url = f"{self.url}/api/services/light/turn_on"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
@@ -399,7 +399,7 @@ class Interface(BasicRevert, BaseInterface):
 
     def set_input_boolean(self, entity_id, state):
         service = 'turn_on' if state == 'on' else 'turn_off'
-        url = f"{self.ip_address}/api/services/input_boolean/{service}"
+        url = f"{self.url}/api/services/input_boolean/{service}"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
