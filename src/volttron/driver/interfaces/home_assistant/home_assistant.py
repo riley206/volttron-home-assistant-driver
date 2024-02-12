@@ -11,7 +11,7 @@
 # use this file except in compliance with the License. You may obtain a copy
 # of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -196,7 +196,7 @@ class Interface(BasicRevert, BaseInterface):
             "Content-Type": "application/json",
         }
         # the /states grabs current state AND attributes of a specific entity
-        url = f"http://{self.ip_address}:{self.port}/api/states/{point_name}"
+        url = f"https://{self.ip_address}:{self.port}/api/states/{point_name}"
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()    # return the json attributes from entity
@@ -309,7 +309,7 @@ class Interface(BasicRevert, BaseInterface):
             self.insert_register(register)
 
     def turn_off_lights(self, entity_id):
-        url = f"http://{self.ip_address}:{self.port}/api/services/light/turn_off"
+        url = f"{self.ip_address}:{self.port}/api/services/light/turn_off"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
@@ -320,7 +320,7 @@ class Interface(BasicRevert, BaseInterface):
         _post_method(url, headers, payload, f"turn off {entity_id}")
 
     def turn_on_lights(self, entity_id):
-        url = f"http://{self.ip_address}:{self.port}/api/services/light/turn_on"
+        url = f"{self.ip_address}:{self.port}/api/services/light/turn_on"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
@@ -335,7 +335,7 @@ class Interface(BasicRevert, BaseInterface):
             _log.error(f"{entity_id} is not a valid thermostat entity ID.")
             return
         # Build header
-        url = f"http://{self.ip_address}:{self.port}/api/services/climate/set_hvac_mode"
+        url = f"{self.ip_address}:{self.port}/api/services/climate/set_hvac_mode"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "content-type": "application/json",
@@ -354,7 +354,7 @@ class Interface(BasicRevert, BaseInterface):
             _log.error(f"{entity_id} is not a valid thermostat entity ID.")
             return
 
-        url = f"http://{self.ip_address}:{self.port}/api/services/climate/set_temperature"
+        url = f"{self.ip_address}:{self.port}/api/services/climate/set_temperature"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "content-type": "application/json",
@@ -375,7 +375,7 @@ class Interface(BasicRevert, BaseInterface):
         _post_method(url, headers, data, f"set temperature of {entity_id} to {temperature}")
 
     def change_brightness(self, entity_id, value):
-        url = f"http://{self.ip_address}:{self.port}/api/services/light/turn_on"
+        url = f"{self.ip_address}:{self.port}/api/services/light/turn_on"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
@@ -390,7 +390,7 @@ class Interface(BasicRevert, BaseInterface):
 
     def set_input_boolean(self, entity_id, state):
         service = 'turn_on' if state == 'on' else 'turn_off'
-        url = f"http://{self.ip_address}:{self.port}/api/services/input_boolean/{service}"
+        url = f"{self.ip_address}:{self.port}/api/services/input_boolean/{service}"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
