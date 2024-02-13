@@ -82,7 +82,7 @@ class Interface(BasicRevert, BaseInterface):
         self.point_name = None
         self.url = None
         self.access_token = None
-        self.verify_ssl = False    # Default to False for security
+        self.verify_ssl = True    # Default to True for security
         self.units = None
 
     def configure(self, config_dict, registry_config_str):
