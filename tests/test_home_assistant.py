@@ -33,9 +33,10 @@ from volttrontesting.fixtures.volttron_platform_fixtures import volttron_instanc
 
 # To run these tests, create a helper toggle named volttrontest in your Home Assistant instance.
 # This can be done by going to Settings > Devices & services > Helpers > Create Helper > Toggle
-HOMEASSISTANT_TEST_IP = ""
+HOMEASSISTANT_URL = "" # Example, http://0.0.0.0:8123
 ACCESS_TOKEN = ""
-PORT = ""
+SSL_CERT_PATH = "" # Optional for self signed cert
+VERIFY_SSL = True
 
 
 def test_scrape_all(publish_agent):
@@ -60,9 +61,10 @@ def test_scrape_all(publish_agent):
 
     driver_config = {
         "driver_config": {
-            "ip_address": HOMEASSISTANT_TEST_IP,
+            "url": HOMEASSISTANT_URL,
             "access_token": ACCESS_TOKEN,
-            "port": PORT
+            "verify_ssl": VERIFY_SSL,
+            "ssl_cert_path": SSL_CERT_PATH
         },
         "driver_type": "home_assistant",
         "registry_config": f"config://homeassistant_test.json",
@@ -147,9 +149,10 @@ def publish_agent(volttron_instance: PlatformWrapper):
 
     driver_config = {
         "driver_config": {
-            "ip_address": HOMEASSISTANT_TEST_IP,
+            "url": HOMEASSISTANT_URL,
             "access_token": ACCESS_TOKEN,
-            "port": PORT
+            "verify_ssl": VERIFY_SSL,
+            "ssl_cert_path": SSL_CERT_PATH
         },
         "driver_type": "home_assistant",
         "registry_config": f"config://homeassistant_test.json",
